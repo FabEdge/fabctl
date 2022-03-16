@@ -41,3 +41,12 @@ func (args Args) GetValue(name string) string {
 
 	return values[0]
 }
+
+func (args Args) GetValueOrDefault(name, defaultValue string) string {
+	values := args.args[name]
+	if values == nil {
+		return defaultValue
+	}
+
+	return values[0]
+}
