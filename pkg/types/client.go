@@ -19,3 +19,9 @@ func (c Client) GetDeployment(ctx context.Context, namespace, name string) (apps
 
 	return deploy, err
 }
+
+func (c Client) GetDaemonSet(ctx context.Context, namespace, name string) (appsv1.DaemonSet, error) {
+	var ds appsv1.DaemonSet
+	err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ds)
+	return ds, err
+}
