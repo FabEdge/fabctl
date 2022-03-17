@@ -12,6 +12,7 @@ import (
 	nodeutil "github.com/fabedge/fabedge/pkg/util/node"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/fabedge/fabctl/pkg/types"
@@ -25,6 +26,7 @@ type Cluster struct {
 	EndpointIDFormat  string
 	NewEndpoint       ftypes.NewEndpointFunc
 	EdgeToCommunities map[string][]string
+	Communities       map[string]apisv1.Community
 }
 
 func New(clientGetter types.ClientGetter) *cobra.Command {
@@ -80,6 +82,7 @@ func getCluster(cli *types.Client) (Cluster, error) {
 		CNIType:           args.GetValue("cni-type"),
 		EndpointIDFormat:  args.GetValueOrDefault("endpoint-id-format", "C=CN, O=fabedge.io, CN={node}"),
 		EdgeToCommunities: make(map[string][]string),
+		Communities:       make(map[string]apisv1.Community),
 		EdgeLabels:        parseLabels(args.GetValueOrDefault("edge-labels", "C=CN, O=fabedge.io, CN={node}")),
 	}
 
@@ -94,6 +97,7 @@ func getCluster(cli *types.Client) (Cluster, error) {
 	_, _, cluster.NewEndpoint = ftypes.NewEndpointFuncs(cluster.Name, cluster.EndpointIDFormat, getPodCIDR)
 
 	for _, community := range communityList.Items {
+		cluster.Communities[community.Name] = community
 		for _, epName := range community.Spec.Members {
 			cluster.EdgeToCommunities[epName] = append(cluster.EdgeToCommunities[epName], community.Name)
 		}
@@ -104,18 +108,27 @@ func getCluster(cli *types.Client) (Cluster, error) {
 
 func displayNodeInfo(node corev1.Node, cluster Cluster) {
 	endpoint := cluster.NewEndpoint(node)
+
+	communityNames, peers := cluster.EdgeToCommunities[endpoint.Name], sets.NewString()
+	for _, name := range communityNames {
+		peers.Insert(cluster.Communities[name].Spec.Members...)
+	}
+	peers.Delete(endpoint.Name)
+
 	fmt.Printf(`
-Name: %s
+Name:             %s
 Public Addresses: %s
-Node Subnets: %s
-PodCIDRs: %s
-Communities: %s
+Node Subnets:     %s
+PodCIDRs:         %s
+Communities:      %s
+Peers:            %s
 `,
 		node.Name,
 		strings.Join(endpoint.PublicAddresses, ","),
 		strings.Join(endpoint.NodeSubnets, ","),
 		strings.Join(endpoint.Subnets, ","),
 		strings.Join(cluster.EdgeToCommunities[endpoint.Name], ","),
+		strings.Join(peers.List(), ","),
 	)
 }
 
