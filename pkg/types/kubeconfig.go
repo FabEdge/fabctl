@@ -2,6 +2,7 @@ package types
 
 import (
 	"flag"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/rest"
@@ -39,5 +40,10 @@ func (cfg KubeConfig) GetClient() (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{config: restConfig, Client: cli}, nil
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{config: restConfig, Client: cli, clientset: clientset}, nil
 }
