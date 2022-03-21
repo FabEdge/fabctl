@@ -111,7 +111,7 @@ func execute(client *types.Client, edgeName string, flags ...string) {
 	cmd := append([]string{"swanctl"}, flags...)
 
 	fmt.Printf("========================== %s =================================\n", podName)
-	err := client.Exec("fabedge", podName, "strongswan", cmd)
+	err := client.Exec(podName, "strongswan", cmd)
 	util.CheckError(err)
 }
 

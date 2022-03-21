@@ -2,9 +2,9 @@ package types
 
 import (
 	"flag"
-	"k8s.io/client-go/kubernetes"
 
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -15,21 +15,24 @@ type ClientGetter interface {
 	GetClient() (*Client, error)
 }
 
-type KubeConfig struct{}
-
-func NewKubeConfig() *KubeConfig {
-	return &KubeConfig{}
+type ClientFactory struct {
+	Namespace string
 }
 
-func (cfg KubeConfig) AddFlags(fs *pflag.FlagSet) {
+func NewClientFlags() *ClientFactory {
+	return &ClientFactory{}
+}
+
+func (cfg *ClientFactory) AddFlags(fs *pflag.FlagSet) {
 	fs.AddGoFlagSet(flag.CommandLine)
+	fs.StringVarP(&cfg.Namespace, "namespace", "n", "fabedge", "The namespace where FabEdge is deployed.")
 }
 
-func (cfg KubeConfig) GetConfig() (*rest.Config, error) {
+func (cfg ClientFactory) GetConfig() (*rest.Config, error) {
 	return config.GetConfig()
 }
 
-func (cfg KubeConfig) GetClient() (*Client, error) {
+func (cfg ClientFactory) GetClient() (*Client, error) {
 	restConfig, err := config.GetConfig()
 	if err != nil {
 		return nil, err
@@ -45,5 +48,10 @@ func (cfg KubeConfig) GetClient() (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{config: restConfig, Client: cli, clientset: clientset}, nil
+	return &Client{
+		config:    restConfig,
+		Client:    cli,
+		clientset: clientset,
+		namespace: cfg.Namespace,
+	}, nil
 }

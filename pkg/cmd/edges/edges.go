@@ -65,7 +65,7 @@ func New(clientGetter types.ClientGetter) *cobra.Command {
 }
 
 func getCluster(cli *types.Client) (Cluster, error) {
-	operator, err := cli.GetDeployment(context.Background(), "fabedge", "fabedge-operator")
+	operator, err := cli.GetDeployment(context.Background(), "fabedge-operator")
 	if err != nil {
 		return Cluster{}, err
 	}

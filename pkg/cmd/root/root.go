@@ -16,13 +16,13 @@ func NewRootCommand() *cobra.Command {
 		Use: "fabctl <command> <subcommand>",
 	}
 
-	kubeConfig := types.NewKubeConfig()
-	kubeConfig.AddFlags(cmd.PersistentFlags())
+	clientFactory := types.NewClientFlags()
+	clientFactory.AddFlags(cmd.PersistentFlags())
 
-	cmd.AddCommand(clusterinfo.New(kubeConfig))
-	cmd.AddCommand(images.New(kubeConfig))
-	cmd.AddCommand(edges.New(kubeConfig))
-	cmd.AddCommand(swanctl.New(kubeConfig))
+	cmd.AddCommand(clusterinfo.New(clientFactory))
+	cmd.AddCommand(images.New(clientFactory))
+	cmd.AddCommand(edges.New(clientFactory))
+	cmd.AddCommand(swanctl.New(clientFactory))
 	cmd.AddCommand(version.New())
 
 	return cmd

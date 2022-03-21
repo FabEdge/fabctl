@@ -21,20 +21,21 @@ type ExecResult struct {
 
 type Client struct {
 	client.Client
-	clientset kubernetes.Interface
+	namespace string
 	config    *rest.Config
+	clientset kubernetes.Interface
 }
 
-func (c Client) GetDeployment(ctx context.Context, namespace, name string) (appsv1.Deployment, error) {
+func (c Client) GetDeployment(ctx context.Context, name string) (appsv1.Deployment, error) {
 	var deploy appsv1.Deployment
-	err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &deploy)
+	err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: c.namespace}, &deploy)
 
 	return deploy, err
 }
 
-func (c Client) GetDaemonSet(ctx context.Context, namespace, name string) (appsv1.DaemonSet, error) {
+func (c Client) GetDaemonSet(ctx context.Context, name string) (appsv1.DaemonSet, error) {
 	var ds appsv1.DaemonSet
-	err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ds)
+	err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: c.namespace}, &ds)
 	return ds, err
 }
 
@@ -44,11 +45,11 @@ func (c Client) GetNode(ctx context.Context, name string) (corev1.Node, error) {
 	return node, err
 }
 
-func (c Client) Exec(namespace, podName, containerName string, cmd []string) error {
+func (c Client) Exec(podName, containerName string, cmd []string) error {
 	req := c.clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
-		Namespace(namespace).
+		Namespace(c.namespace).
 		SubResource("exec")
 
 	req.VersionedParams(&corev1.PodExecOptions{
