@@ -57,7 +57,7 @@ Connector Subnets:          %s
 }
 
 func (c *Cluster) extractValuesFromOperator() {
-	operator, err := c.client.GetDeployment(context.Background(), "fabedge", "fabedge-operator")
+	operator, err := c.client.GetDeployment(context.Background(), "fabedge-operator")
 	if err != nil {
 		util.Exitf("failed to get fabedge-operator deployment: %s\n", err)
 	}
@@ -72,7 +72,7 @@ func (c *Cluster) extractValuesFromOperator() {
 }
 
 func (c *Cluster) extractTopology() {
-	serviceHub, err := c.client.GetDeployment(context.Background(), "fabedge", "service-hub")
+	serviceHub, err := c.client.GetDeployment(context.Background(), "service-hub")
 	switch {
 	case err == nil:
 		args := types.NewArgs(serviceHub.Spec.Template.Spec.Containers[0].Args)
