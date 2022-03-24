@@ -11,6 +11,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	apisv1 "github.com/fabedge/fabedge/pkg/apis/v1alpha1"
 )
 
 type ExecResult struct {
@@ -43,6 +45,25 @@ func (c Client) GetNode(ctx context.Context, name string) (corev1.Node, error) {
 	var node corev1.Node
 	err := c.Get(ctx, client.ObjectKey{Name: name}, &node)
 	return node, err
+}
+
+func (c Client) ListAllCommunities(ctx context.Context) ([]apisv1.Community, error) {
+	var communities apisv1.CommunityList
+	err := c.List(ctx, &communities)
+	return communities.Items, err
+}
+
+func (c Client) ListEdgeNodes(ctx context.Context, labels client.MatchingLabels) ([]corev1.Node, error) {
+	var nodes corev1.NodeList
+	err := c.List(ctx, &nodes, labels)
+	return nodes.Items, err
+}
+
+func (c Client) ListClusters(ctx context.Context) ([]apisv1.Cluster, error) {
+	var clusters apisv1.ClusterList
+	err := c.List(context.Background(), &clusters)
+
+	return clusters.Items, err
 }
 
 func (c Client) Exec(podName, containerName string, cmd []string) error {

@@ -1,4 +1,4 @@
-package root
+package cmd
 
 import (
 	"github.com/spf13/cobra"
@@ -7,11 +7,12 @@ import (
 	"github.com/fabedge/fabctl/pkg/cmd/edges"
 	"github.com/fabedge/fabctl/pkg/cmd/images"
 	"github.com/fabedge/fabctl/pkg/cmd/swanctl"
+	"github.com/fabedge/fabctl/pkg/cmd/topology"
 	"github.com/fabedge/fabctl/pkg/cmd/version"
 	"github.com/fabedge/fabctl/pkg/types"
 )
 
-func NewRootCommand() *cobra.Command {
+func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "fabctl <command> <subcommand>",
 	}
@@ -23,6 +24,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(images.New(clientFactory))
 	cmd.AddCommand(edges.New(clientFactory))
 	cmd.AddCommand(swanctl.New(clientFactory))
+	cmd.AddCommand(topology.New(clientFactory))
 	cmd.AddCommand(version.New())
 
 	return cmd

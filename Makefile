@@ -7,7 +7,7 @@ FLAG_VERSION := ${META}.version=${VERSION}
 FLAG_BUILD_TIME := ${META}.buildTime=${BUILD_TIME}
 FLAG_GIT_COMMIT := ${META}.gitCommit=${GIT_COMMIT}
 GOLDFLAGS ?= -s -w
-LDFLAGS := -ldflags "${GOLDFLAGS} -X ${FLAG_VERSION} -X ${FLAG_BUILD_TIME} -X ${FLAG_GIT_COMMIT}"
+LDFLAGS := -ldflags "${GOLDFLAGS} -extldflags=-static -X ${FLAG_VERSION} -X ${FLAG_BUILD_TIME} -X ${FLAG_GIT_COMMIT}"
 
 OUTPUT_DIR := _output
 
