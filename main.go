@@ -7,7 +7,7 @@ import (
 	apis "github.com/fabedge/fabedge/pkg/apis/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/fabedge/fabctl/pkg/cmd/root"
+	"github.com/fabedge/fabctl/pkg/cmd"
 )
 
 func init() {
@@ -15,7 +15,7 @@ func init() {
 }
 
 func main() {
-	cmd := root.NewRootCommand()
+	cmd := cmd.New()
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
 		os.Exit(1)

@@ -1,4 +1,4 @@
-package root
+package cmd
 
 import (
 	"github.com/spf13/cobra"
@@ -12,7 +12,7 @@ import (
 	"github.com/fabedge/fabctl/pkg/types"
 )
 
-func NewRootCommand() *cobra.Command {
+func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "fabctl <command> <subcommand>",
 	}
