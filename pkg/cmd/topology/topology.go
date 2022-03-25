@@ -18,11 +18,16 @@ import (
 
 func New(clientGetter types.ClientGetter) *cobra.Command {
 	var output string
+	var layout string
 
 	cmd := &cobra.Command{
 		Use:   "topology [filename] [flags]",
 		Short: "Show the network topology of current cluster",
-		Args:  cobra.MaximumNArgs(1),
+		Example: `
+fabctl topology network.svg
+fabctl topology -l dot -o dot network.dot 
+`,
+		Args: cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			cli, err := clientGetter.GetClient()
 			util.CheckError(err)
@@ -63,11 +68,12 @@ func New(clientGetter types.ClientGetter) *cobra.Command {
 				filename = args[0]
 			}
 
-			renderTopology(cluster, endpoints, filename, graphviz.Format(output))
+			renderTopology(cluster, endpoints, filename, graphviz.Format(output), layout)
 		},
 	}
 
 	cmd.Flags().StringVarP(&output, "output", "o", string(graphviz.SVG), "Output format, possible values: dot, svg, png, jpg.")
+	cmd.Flags().StringVarP(&layout, "layout", "l", "sfdp", "Topology layout, check out https://graphviz.org/docs/layouts/ for possible options.")
 	return cmd
 }
 
@@ -118,10 +124,12 @@ Public Addresses: %s
 	return err
 }
 
-func renderTopology(cluster *types.Cluster, endpoints map[string]Endpoint, filename string, format graphviz.Format) {
+func renderTopology(cluster *types.Cluster, endpoints map[string]Endpoint, filename string, format graphviz.Format, layout string) {
 	g := graphviz.New()
 	graph, err := g.Graph()
 	util.CheckError(err)
+
+	graph.SetLayout(layout)
 
 	for name, ep := range endpoints {
 		util.CheckError((&ep).BuildGraphNode(graph))
@@ -155,10 +163,17 @@ func renderTopology(cluster *types.Cluster, endpoints map[string]Endpoint, filen
 
 	if filename == "" {
 		err = g.Render(graph, format, os.Stdout)
+		util.CheckError(err)
 	} else {
 		err = g.RenderFilename(graph, format, filename)
+		util.CheckError(err)
+
+		fmt.Printf("Topology information is written to %s.\n", filename)
+		if format != graphviz.XDOT {
+			fmt.Println("If you execute `fabctl topology` on a remote computer, it is recommended to open a http server to view the picture, e.g.: python -m http.server 8080.")
+		}
 	}
-	util.CheckError(err)
+
 }
 
 func createEdgeBetweenEndpoints(e1, e2 Endpoint, graph *cgraph.Graph) {
