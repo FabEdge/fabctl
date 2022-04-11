@@ -10,6 +10,7 @@ GOLDFLAGS ?= -s -w
 LDFLAGS := -ldflags "${GOLDFLAGS} -extldflags=-static -X ${FLAG_VERSION} -X ${FLAG_BUILD_TIME} -X ${FLAG_GIT_COMMIT}"
 
 OUTPUT_DIR := _output
+all: fabctl
 
 fmt:
 	GOOS=linux go fmt ./...
@@ -18,5 +19,5 @@ vet:
 	GOOS=linux go vet ./...
 
 .PHONY: fabctl
-fabctl:
+fabctl: fmt vet
 	go build ${LDFLAGS} -o ${OUTPUT_DIR}/$@ .
