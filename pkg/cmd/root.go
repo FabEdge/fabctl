@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/fabedge/fabctl/pkg/cmd/cert"
 	"github.com/fabedge/fabctl/pkg/cmd/clusterinfo"
 	"github.com/fabedge/fabctl/pkg/cmd/edges"
 	"github.com/fabedge/fabctl/pkg/cmd/images"
@@ -27,6 +28,7 @@ func New() *cobra.Command {
 	cmd.AddCommand(edges.New(clientFactory))
 	cmd.AddCommand(swanctl.New(clientFactory))
 	cmd.AddCommand(topology.New(clientFactory))
+	cmd.AddCommand(cert.New(clientFactory))
 	cmd.AddCommand(version.New())
 
 	return cmd
