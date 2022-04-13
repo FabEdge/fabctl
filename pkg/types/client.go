@@ -15,6 +15,8 @@ import (
 	apisv1 "github.com/fabedge/fabedge/pkg/apis/v1alpha1"
 )
 
+type ObjectKey = client.ObjectKey
+
 type ExecResult struct {
 	Stdout string
 	Stderr string
@@ -95,4 +97,8 @@ func (c Client) Exec(podName, containerName string, cmd []string) error {
 	})
 
 	return err
+}
+
+func (c Client) GetNamespace() string {
+	return c.namespace
 }
