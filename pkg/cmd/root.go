@@ -5,8 +5,8 @@ import (
 
 	"github.com/fabedge/fabctl/pkg/cmd/cert"
 	"github.com/fabedge/fabctl/pkg/cmd/clusterinfo"
-	"github.com/fabedge/fabctl/pkg/cmd/edges"
 	"github.com/fabedge/fabctl/pkg/cmd/images"
+	"github.com/fabedge/fabctl/pkg/cmd/nodes"
 	"github.com/fabedge/fabctl/pkg/cmd/ping"
 	"github.com/fabedge/fabctl/pkg/cmd/swanctl"
 	"github.com/fabedge/fabctl/pkg/cmd/topology"
@@ -25,7 +25,7 @@ func New() *cobra.Command {
 	cmd.AddCommand(clusterinfo.New(clientFactory))
 	cmd.AddCommand(ping.New(clientFactory))
 	cmd.AddCommand(images.New(clientFactory))
-	cmd.AddCommand(edges.New(clientFactory))
+	cmd.AddCommand(nodes.New(clientFactory))
 	cmd.AddCommand(swanctl.New(clientFactory))
 	cmd.AddCommand(topology.New(clientFactory))
 	cmd.AddCommand(cert.New(clientFactory))

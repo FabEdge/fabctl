@@ -1,4 +1,4 @@
-package edges
+package nodes
 
 import (
 	"context"
@@ -10,12 +10,16 @@ import (
 	"github.com/fabedge/fabctl/pkg/util"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func New(clientGetter types.ClientGetter) *cobra.Command {
-	return &cobra.Command{
-		Use:   "edges [node1] [node2]...",
+	var selector string
+	var edgeOnly bool
+	cmd := &cobra.Command{
+		Use:   "nodes [node1] [node2]...",
 		Short: "Show network information about edge nodes",
 		Run: func(cmd *cobra.Command, args []string) {
 			cli, err := clientGetter.GetClient()
@@ -36,8 +40,19 @@ func New(clientGetter types.ClientGetter) *cobra.Command {
 					}
 				}
 			} else {
-				nodes, err = cli.ListEdgeNodes(context.Background(), cluster.EdgeLabels)
-				util.CheckError(err)
+				if edgeOnly {
+					nodes, err = cli.ListNodes(context.Background(), cluster.EdgeLabels)
+					util.CheckError(err)
+				} else {
+					l, err := labels.Parse(selector)
+					util.CheckError(err)
+
+					var nodeList corev1.NodeList
+					err = cli.List(context.Background(), &nodeList, client.MatchingLabelsSelector{Selector: l})
+					util.CheckError(err)
+
+					nodes = nodeList.Items
+				}
 			}
 
 			for _, node := range nodes {
@@ -45,6 +60,13 @@ func New(clientGetter types.ClientGetter) *cobra.Command {
 			}
 		},
 	}
+
+	fs := cmd.Flags()
+
+	usage := "Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2). Selectors will be ignored if you provide any nodeName."
+	fs.StringVarP(&selector, "selector", "l", "", usage)
+	fs.BoolVarP(&edgeOnly, "edge-only", "e", false, "Display edge nodes only. If this flag is set to true, then selector won't work")
+	return cmd
 }
 
 func displayNodeInfo(node corev1.Node, cluster *types.Cluster) {
