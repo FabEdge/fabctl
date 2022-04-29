@@ -36,7 +36,7 @@ fabctl topology -l dot -o dot network.dot
 			util.CheckError(cluster.ExtractArgumentsFromFabEdge())
 			util.CheckError(cluster.LoadCommunities())
 
-			edgeNodes, err := cli.ListEdgeNodes(context.Background(), cluster.EdgeLabels)
+			edgeNodes, err := cli.ListNodes(context.Background(), cluster.EdgeLabels)
 			util.CheckError(err)
 
 			clusters, err := cli.ListClusters(context.Background())

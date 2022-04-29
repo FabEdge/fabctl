@@ -55,7 +55,7 @@ func (c Client) ListAllCommunities(ctx context.Context) ([]apisv1.Community, err
 	return communities.Items, err
 }
 
-func (c Client) ListEdgeNodes(ctx context.Context, labels client.MatchingLabels) ([]corev1.Node, error) {
+func (c Client) ListNodes(ctx context.Context, labels client.MatchingLabels) ([]corev1.Node, error) {
 	var nodes corev1.NodeList
 	err := c.List(ctx, &nodes, labels)
 	return nodes.Items, err
