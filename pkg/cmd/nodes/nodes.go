@@ -6,13 +6,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fabedge/fabctl/pkg/types"
-	"github.com/fabedge/fabctl/pkg/util"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/fabedge/fabctl/pkg/types"
+	"github.com/fabedge/fabctl/pkg/util"
+	nodeutil "github.com/fabedge/fabedge/pkg/util/node"
 )
 
 func New(clientGetter types.ClientGetter) *cobra.Command {
@@ -71,6 +73,7 @@ func New(clientGetter types.ClientGetter) *cobra.Command {
 
 func displayNodeInfo(node corev1.Node, cluster *types.Cluster) {
 	endpoint := cluster.NewEndpoint(node)
+	podCIDRs := nodeutil.GetPodCIDRs(node)
 
 	communityNames, peers := cluster.EdgeToCommunities[endpoint.Name], sets.NewString()
 	for _, name := range communityNames {
@@ -83,12 +86,14 @@ Name:             %s
 Public Addresses: %s
 Node Subnets:     %s
 PodCIDRs:         %s
+EdgePodCIDRs:     %s
 Communities:      %s
 Peers:            %s
 `,
 		node.Name,
 		strings.Join(endpoint.PublicAddresses, ","),
 		strings.Join(endpoint.NodeSubnets, ","),
+		strings.Join(podCIDRs, ","),
 		strings.Join(endpoint.Subnets, ","),
 		strings.Join(communityNames, ","),
 		strings.Join(peers.List(), ","),
