@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/fabedge/fabctl/pkg/types"
@@ -104,8 +105,9 @@ func execute(client *types.Client, edgeName string, flags ...string) {
 	}
 
 	podName := edgeName
-	if !strings.HasPrefix(edgeName, "fabedge-connector") {
-		podName = fmt.Sprintf("fabedge-agent-%s", edgeName)
+	// if edgeName has prefix like fabedge-connector or fabedge-agent, user may pass a pod name, just use it directly
+	if !strings.HasPrefix(edgeName, "fabedge-connector") && !strings.HasPrefix(edgeName, "fabedge-agent") {
+		podName = getAgentPodName(client, edgeName)
 	}
 
 	cmd := append([]string{"swanctl"}, flags...)
@@ -113,6 +115,39 @@ func execute(client *types.Client, edgeName string, flags ...string) {
 	fmt.Printf("========================== %s =================================\n", podName)
 	err := client.Exec(podName, "strongswan", cmd)
 	util.CheckError(err)
+}
+
+//
+func getAgentPodName(cli *types.Client, edgeName string) string {
+	agentName := fmt.Sprintf("fabedge-agent-%s", edgeName)
+
+	var (
+		pod corev1.Pod
+		key = types.ObjectKey{Name: agentName, Namespace: cli.GetNamespace()}
+	)
+	err := cli.Get(context.Background(), key, &pod)
+	if err == nil {
+		return pod.Name
+	}
+
+	if errors.IsNotFound(err) {
+		var podList corev1.PodList
+		err = cli.List(context.Background(), &podList,
+			client.InNamespace(cli.GetNamespace()),
+			client.MatchingLabels{
+				"fabedge.io/name": agentName,
+			})
+		util.CheckError(err)
+
+		if len(podList.Items) == 0 {
+			util.Exitf("no agent pod for node: %s", edgeName)
+		}
+
+		return podList.Items[0].Name
+	}
+
+	util.Exitf("failed to get agent pod: %s", err)
+	return ""
 }
 
 func executeOnConnectors(cli *types.Client, cmdFlags ...string) {
