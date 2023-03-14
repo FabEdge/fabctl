@@ -45,35 +45,33 @@ fabctl swanctl connector -- --version
 		clientGetter,
 		"list-conns edge [flags]",
 		"List loaded configurations of strongswan container in specified edge",
-		false, false,
 	))
 	cmd.AddCommand(newSubCommand(
 		"--list-sa",
 		clientGetter,
 		"list-sa [edge] [flags]",
 		"List currently active IKE_SAs of strongswan container in specified edge",
-		true, false,
 	))
 	cmd.AddCommand(newSubCommand(
 		"--initiate",
 		clientGetter,
 		"initiate edge [flags]",
 		"Initiate connection of strongswan container in specified edge",
-		true, true,
+		addIKE, addChild, addTimeout,
 	))
 	cmd.AddCommand(newSubCommand(
 		"--terminate",
 		clientGetter,
 		"terminate edge [flags]",
 		"Terminate connection of strongswan container in specified edge",
-		true, true,
+		addIKE, addChild, addTimeout,
 	))
 
 	return cmd
 }
 
-func newSubCommand(name string, clientGetter types.ClientGetter, usage, short string, useIKE, useChild bool) *cobra.Command {
-	flags := &swanctlFlags{}
+func newSubCommand(name string, clientGetter types.ClientGetter, usage, short string, funcs ...addFlagFunc) *cobra.Command {
+	sf := &swanctlFlags{}
 	cmd := &cobra.Command{
 		Use:   usage,
 		Short: short,
@@ -82,17 +80,14 @@ func newSubCommand(name string, clientGetter types.ClientGetter, usage, short st
 			cli, err := clientGetter.GetClient()
 			util.CheckError(err)
 
-			execute(cli, args[0], flags.build(name)...)
+			execute(cli, args[0], sf.build(name)...)
 		},
 	}
 
-	flags.addRawAndPretty(cmd.Flags())
-	if useIKE {
-		flags.addIKE(cmd.Flags())
-	}
+	addRawAndPretty(sf, cmd.Flags())
 
-	if useChild {
-		flags.addChild(cmd.Flags())
+	for _, addFlag := range funcs {
+		addFlag(sf, cmd.Flags())
 	}
 
 	return cmd
