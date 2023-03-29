@@ -94,7 +94,7 @@ func getOrCreateNetToolPod(ctx context.Context, client *types.Client, nodeName s
 				Name:      podName,
 				Namespace: client.GetNamespace(),
 				Labels: map[string]string{
-					constants.KeyFabedgeAPP: "net-tool",
+					constants.KeyFabEdgeAPP: "net-tool",
 					constants.KeyCreatedBy:  "fabctl",
 				},
 			},
