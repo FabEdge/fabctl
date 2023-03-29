@@ -69,7 +69,7 @@ func newNetToolPod(nodeName, podName, namespace, image string, useHostNetwork bo
 			Name:      podName,
 			Namespace: namespace,
 			Labels: map[string]string{
-				constants.KeyFabedgeAPP: "net-tool",
+				constants.KeyFabEdgeAPP: "net-tool",
 				constants.KeyCreatedBy:  "fabctl",
 			},
 		},
