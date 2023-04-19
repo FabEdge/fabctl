@@ -6,7 +6,7 @@ on:
       - '**.go'
       - 'Makefile'
       - 'go.mod'
-      - 'go.sub'
+      - 'go.sum'
 
 jobs:
   analyze:
